@@ -1,0 +1,16 @@
+[
+  {
+    "SubscriberKey": "SUB_98124",
+    "EmailAddress": "alex.rivers@example.com",
+    "FirstName": "Alex",
+    "CartID": "CART_9921_US",
+    "AbandonedDate": "2026-09-17 14:22:10"
+  },
+  {
+    "SubscriberKey": "SUB_98125",
+    "EmailAddress": "j.doe@example.com",
+    "FirstName": "",
+    "CartID": "CART_9922_US",
+    "AbandonedDate": "2026-09-17 18:05:00"
+  }
+]
