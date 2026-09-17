@@ -1,0 +1,38 @@
+[
+  {
+    "CartID": "CART_9921_US",
+    "ItemIndex": 1,
+    "SKU": "AURA-ANC-BLK",
+    "ProductName": "Aura Studio Pro Wireless",
+    "Category": "Audio",
+    "SalePrice": 249.99,
+    "OriginalPrice": 329.99,
+    "StockCount": 3,
+    "ImageURL": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=600&q=80",
+    "CartURL": "https://example.com/checkout?cart=CART_9921_US&item=1"
+  },
+  {
+    "CartID": "CART_9921_US",
+    "ItemIndex": 2,
+    "SKU": "AURA-AIR-SLV",
+    "ProductName": "Aura Air Earbuds (Gen 2)",
+    "Category": "Audio",
+    "SalePrice": 129.00,
+    "OriginalPrice": 129.00,
+    "StockCount": 14,
+    "ImageURL": "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&w=600&q=80",
+    "CartURL": "https://example.com/checkout?cart=CART_9921_US&item=2"
+  },
+  {
+    "CartID": "CART_9921_US",
+    "ItemIndex": 3,
+    "SKU": "AURA-PAD-QI",
+    "ProductName": "Aura Magnetic Qi2 Charger",
+    "Category": "Accessories",
+    "SalePrice": 49.50,
+    "OriginalPrice": 65.00,
+    "StockCount": 2,
+    "ImageURL": "https://images.unsplash.com/photo-1622445262464-84b1456045b6?auto=format&fit=crop&w=600&q=80",
+    "CartURL": "https://example.com/checkout?cart=CART_9921_US&item=3"
+  }
+]
