@@ -1,0 +1,319 @@
+%%[
+  /* =========================================================================
+     ABANDONED CART LOGIC ENGINE (SFMC / AMPSCRIPT)
+     ========================================================================= */
+
+  /* 1. Subscriber Identity & Fallbacks */
+  VAR @subscriberKey, @firstName, @cartID, @recoveryUrl
+  SET @subscriberKey = AttributeValue("_subscriberkey")
+  SET @firstName     = ProperCase(Trim(AttributeValue("FirstName")))
+  SET @cartID        = AttributeValue("CartID")
+  
+  IF EMPTY(@firstName) THEN
+    SET @firstName = "there"
+  ENDIF
+
+  /* Base recovery redirect */
+  SET @recoveryUrl = Concat("https://example.com/checkout/resume?cart=", @cartID, "&utm_source=sfmc&utm_medium=email&utm_campaign=cart_abandonment")
+
+  /* 2. Retrieve Cart Items from Data Extension */
+  VAR @cartRows, @itemCount, @i
+  SET @cartRows = LookupOrderedRows(
+    "AbandonedCart_Items",
+    4,
+    "ItemIndex ASC",
+    "CartID", @cartID
+  )
+  SET @itemCount = RowCount(@cartRows)
+
+  /* Safety check: Stop send if cart records went missing */
+  IF @itemCount == 0 THEN
+    RaiseError("No items found for abandoned cart. Aborting send.", true)
+  ENDIF
+
+  /* Iteration storage holders */
+  VAR @lIdx, @lName, @lSale, @lOrig, @lStock, @lImg, @lUrl, @lBadge
+  VAR @rIdx, @rName, @rSale, @rOrig, @rStock, @rImg, @rUrl, @rBadge
+]%%
+<!DOCTYPE html>
+<html lang="en" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="x-apple-disable-message-reformatting">
+  <title>Your cart is waiting</title>
+  <!--[if mso]>
+  <xml>
+    <o:OfficeDocumentSettings>
+      <o:AllowPNG/>
+      <o:PixelsPerInch>96</o:PixelsPerInch>
+    </o:OfficeDocumentSettings>
+  </xml>
+  <style>
+    table { border-collapse: collapse; }
+    .mso-sans { font-family: Arial, sans-serif !important; }
+  </style>
+  <![endif]-->
+  <style>
+    html, body { margin: 0 auto !important; padding: 0 !important; height: 100% !important; width: 100% !important; background-color: #0B0E14; }
+    * { -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; }
+    table, td { mso-table-lspace: 0pt !important; mso-table-rspace: 0pt !important; }
+    img { -ms-interpolation-mode: bicubic; border: 0; outline: none; text-decoration: none; }
+
+    @media screen and (max-width: 600px) {
+      .container-table { width: 100% !important; max-width: 100% !important; }
+      .stack-column { display: block !important; width: 100% !important; max-width: 100% !important; direction: ltr !important; }
+      .mobile-padding { padding-left: 20px !important; padding-right: 20px !important; }
+      .headline { font-size: 28px !important; line-height: 34px !important; }
+    }
+  </style>
+</head>
+<body style="margin: 0; padding: 0; background-color: #0B0E14;">
+
+  <!-- Hidden Preheader -->
+  <div style="display: none; font-size: 1px; color: #0B0E14; line-height: 1px; max-height: 0px; max-width: 0px; opacity: 0; overflow: hidden;">
+    Hey %%=v(@firstName)=%%, we saved your bag. Complete your order before items sell out.
+  </div>
+
+  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #0B0E14;">
+    <tr>
+      <td align="center" style="padding: 24px 10px;">
+
+        <!-- Outer Wrapper 600px -->
+        <!--[if (gte mso 9)|(IE)]>
+        <table role="presentation" align="center" border="0" cellspacing="0" cellpadding="0" width="600">
+        <tr><td>
+        <![endif]-->
+        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" class="container-table" style="max-width: 600px; background-color: #111726; border-radius: 14px; border: 1px solid #1E293B; overflow: hidden;">
+
+          <!-- Brand Bar -->
+          <tr>
+            <td align="center" style="padding: 24px; border-bottom: 1px solid #1E293B; background-color: #0E131F;">
+              <span style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 800; letter-spacing: 0.18em; color: #38BDF8; text-transform: uppercase;">
+                AURA // ACOUSTICS
+              </span>
+            </td>
+          </tr>
+
+          <!-- Header / Urgency Prompt -->
+          <tr>
+            <td class="mobile-padding" align="center" style="padding: 36px 32px 24px 32px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+              <div style="display: inline-block; padding: 4px 12px; background-color: rgba(239, 68, 68, 0.12); border: 1px solid #EF4444; border-radius: 16px; color: #F87171; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 16px;">
+                Reserved Cart Expiring Soon
+              </div>
+              <h1 class="headline" style="margin: 0 0 12px 0; font-size: 32px; line-height: 38px; font-weight: 800; color: #F8FAFC; letter-spacing: -0.02em;">
+                Don't leave sound behind, %%=v(@firstName)=%%.
+              </h1>
+              <p style="margin: 0 0 24px 0; font-size: 15px; line-height: 24px; color: #94A3B8; max-width: 440px;">
+                The items left in your shopping session are selling fast. We have placed a temporary reserve on your cart.
+              </p>
+              
+              <!-- Master Bulletproof CTA -->
+              <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center" bgcolor="#0284C7" style="border-radius: 8px;">
+                    <a href="%%=RedirectTo(@recoveryUrl)=%%" target="_blank" style="display: inline-block; padding: 14px 36px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 15px; font-weight: 700; color: #FFFFFF; text-decoration: none; border-radius: 8px;">
+                      Return To Checkout &rarr;
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- ================= DYNAMIC PRODUCT MATRIX ================= -->
+          <tr>
+            <td style="padding: 12px 20px 32px 20px;">
+              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+
+                %%[
+                  FOR @i = 1 TO @itemCount STEP 2 DO
+
+                    /* ---------------- Left Item Population ---------------- */
+                    SET @lIdx   = @i
+                    SET @lName  = Field(Row(@cartRows, @lIdx), "ProductName")
+                    SET @lSale  = Field(Row(@cartRows, @lIdx), "SalePrice")
+                    SET @lOrig  = Field(Row(@cartRows, @lIdx), "OriginalPrice")
+                    SET @lStock = Field(Row(@cartRows, @lIdx), "StockCount")
+                    SET @lImg   = Field(Row(@cartRows, @lIdx), "ImageURL")
+                    SET @lUrl   = Field(Row(@cartRows, @lIdx), "CartURL")
+
+                    /* Stock badge condition */
+                    IF @lStock <= 3 THEN
+                      SET @lBadge = "Only a few left"
+                    ELSE
+                      SET @lBadge = ""
+                    ENDIF
+
+                    /* ---------------- Right Item Population ---------------- */
+                    SET @rIdx = Add(@i, 1)
+                    IF @rIdx <= @itemCount THEN
+                      SET @rName  = Field(Row(@cartRows, @rIdx), "ProductName")
+                      SET @rSale  = Field(Row(@cartRows, @rIdx), "SalePrice")
+                      SET @rOrig  = Field(Row(@cartRows, @rIdx), "OriginalPrice")
+                      SET @rStock = Field(Row(@cartRows, @rIdx), "StockCount")
+                      SET @rImg   = Field(Row(@cartRows, @rIdx), "ImageURL")
+                      SET @rUrl   = Field(Row(@cartRows, @rIdx), "CartURL")
+
+                      IF @rStock <= 3 THEN
+                        SET @rBadge = "Only a few left"
+                      ELSE
+                        SET @rBadge = ""
+                      ENDIF
+                    ELSE
+                      SET @rName = ""
+                    ENDIF
+                ]%%
+
+                <tr>
+                  <td align="center" style="font-size: 0; padding: 0;">
+                    
+                    <!-- Outlook 2-Column Row Open -->
+                    <!--[if (gte mso 9)|(IE)]>
+                    <table role="presentation" border="0" cellspacing="0" cellpadding="0" width="560">
+                    <tr>
+                    <td width="272" valign="top">
+                    <![endif]-->
+
+                    <!-- LEFT COLUMN -->
+                    <div class="stack-column" style="display: inline-block; width: 100%; max-width: 272px; vertical-align: top; text-align: left;">
+                      <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 16px;">
+                        <tr>
+                          <td style="padding: 6px;">
+                            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #1A2234; border: 1px solid #2B374E; border-radius: 10px; overflow: hidden;">
+                              <tr>
+                                <td style="position: relative; line-height: 0;">
+                                  <img src="%%=v(@lImg)=%%" alt="%%=v(@lName)=%%" width="260" style="width: 100%; max-width: 260px; height: auto; display: block;" />
+                                </td>
+                              </tr>
+                              <tr>
+                                <td style="padding: 16px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+                                  %%[ IF NOT EMPTY(@lBadge) THEN ]%%
+                                    <span style="display: inline-block; font-size: 10px; font-weight: 700; color: #F87171; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 6px;">
+                                      ⚠️ %%=v(@lBadge)=%%
+                                    </span>
+                                  %%[ ENDIF ]%%
+                                  <div style="font-size: 15px; font-weight: 700; color: #F8FAFC; line-height: 20px; height: 40px; overflow: hidden;">
+                                    %%=v(@lName)=%%
+                                  </div>
+                                  <div style="font-size: 16px; font-weight: 700; color: #38BDF8; margin-top: 10px;">
+                                    $%%=v(@lSale)=%%
+                                    %%[ IF Subtract(@lOrig, @lSale) > 0 THEN ]%%
+                                      <span style="font-size: 13px; color: #64748B; text-decoration: line-through; margin-left: 6px;">$%%=v(@lOrig)=%%</span>
+                                    %%[ ENDIF ]%%
+                                  </div>
+                                  <div style="margin-top: 14px;">
+                                    <a href="%%=RedirectTo(@lUrl)=%%" target="_blank" style="display: block; text-align: center; background-color: #243048; color: #F8FAFC; padding: 9px; font-size: 13px; font-weight: 600; text-decoration: none; border-radius: 6px;">Resume Item</a>
+                                  </div>
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                      </table>
+                    </div>
+
+                    <!-- Outlook Mid-Column Splitter -->
+                    <!--[if (gte mso 9)|(IE)]>
+                    </td>
+                    <td width="16" style="font-size: 1px;">&nbsp;</td>
+                    <td width="272" valign="top">
+                    <![endif]-->
+
+                    <!-- RIGHT COLUMN -->
+                    <div class="stack-column" style="display: inline-block; width: 100%; max-width: 272px; vertical-align: top; text-align: left;">
+                      <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 16px;">
+                        <tr>
+                          <td style="padding: 6px;">
+                            %%[ IF NOT EMPTY(@rName) THEN ]%%
+                              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #1A2234; border: 1px solid #2B374E; border-radius: 10px; overflow: hidden;">
+                                <tr>
+                                  <td style="line-height: 0;">
+                                    <img src="%%=v(@rImg)=%%" alt="%%=v(@rName)=%%" width="260" style="width: 100%; max-width: 260px; height: auto; display: block;" />
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td style="padding: 16px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+                                    %%[ IF NOT EMPTY(@rBadge) THEN ]%%
+                                      <span style="display: inline-block; font-size: 10px; font-weight: 700; color: #F87171; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 6px;">
+                                        ⚠️ %%=v(@rBadge)=%%
+                                      </span>
+                                    %%[ ENDIF ]%%
+                                    <div style="font-size: 15px; font-weight: 700; color: #F8FAFC; line-height: 20px; height: 40px; overflow: hidden;">
+                                      %%=v(@rName)=%%
+                                    </div>
+                                    <div style="font-size: 16px; font-weight: 700; color: #38BDF8; margin-top: 10px;">
+                                      $%%=v(@rSale)=%%
+                                      %%[ IF Subtract(@rOrig, @rSale) > 0 THEN ]%%
+                                        <span style="font-size: 13px; color: #64748B; text-decoration: line-through; margin-left: 6px;">$%%=v(@rOrig)=%%</span>
+                                      %%[ ENDIF ]%%
+                                    </div>
+                                    <div style="margin-top: 14px;">
+                                      <a href="%%=RedirectTo(@rUrl)=%%" target="_blank" style="display: block; text-align: center; background-color: #243048; color: #F8FAFC; padding: 9px; font-size: 13px; font-weight: 600; text-decoration: none; border-radius: 6px;">Resume Item</a>
+                                    </div>
+                                  </td>
+                                </tr>
+                              </table>
+                            %%[ ELSE ]%%
+                              <!-- Spacer keeping symmetry if odd number of items -->
+                              &nbsp;
+                            %%[ ENDIF ]%%
+                          </td>
+                        </tr>
+                      </table>
+                    </div>
+
+                    <!-- Outlook 2-Column Row Close -->
+                    <!--[if (gte mso 9)|(IE)]>
+                    </td>
+                    </tr>
+                    </table>
+                    <![endif]-->
+
+                  </td>
+                </tr>
+
+                %%[ NEXT @i ]%%
+
+              </table>
+            </td>
+          </tr>
+
+          <!-- Global Recovery Button -->
+          <tr>
+            <td align="center" style="padding: 0 32px 32px 32px;">
+              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                <tr>
+                  <td align="center" style="border-top: 1px solid #1E293B; padding-top: 24px;">
+                    <a href="%%=RedirectTo(@recoveryUrl)=%%" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; font-weight: 600; color: #94A3B8; text-decoration: underline;">
+                      Checkout all items from this bag
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td align="center" style="padding: 24px; background-color: #0E131F; border-top: 1px solid #1E293B; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 12px; line-height: 18px; color: #64748B;">
+              <p style="margin: 0 0 8px 0;">Items are subject to availability and cannot be permanently held.</p>
+              <p style="margin: 0;">
+                <a href="%%unsub_center_url%%" style="color: #94A3B8; text-decoration: underline;">Unsubscribe</a> &bull; 
+                <a href="%%profile_center_url%%" style="color: #94A3B8; text-decoration: underline;">Manage Preferences</a>
+              </p>
+            </td>
+          </tr>
+
+        </table>
+        <!--[if (gte mso 9)|(IE)]>
+        </td></tr>
+        </table>
+        <![endif]-->
+
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
