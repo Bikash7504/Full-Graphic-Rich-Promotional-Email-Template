@@ -1,0 +1,20 @@
+[
+  {
+    "SubscriberKey": "SUB_990142",
+    "EmailAddress": "jordan.tech@example.com",
+    "OptIn_Email": true,
+    "OptIn_SMS": false,
+    "OptIn_Push": true,
+    "Frequency": "Weekly",
+    "LastModifiedDate": "2026-09-18 10:14:00"
+  },
+  {
+    "SubscriberKey": "SUB_990143",
+    "EmailAddress": "sam.vance@example.com",
+    "OptIn_Email": true,
+    "OptIn_SMS": true,
+    "OptIn_Push": false,
+    "Frequency": "Daily",
+    "LastModifiedDate": "2026-09-17 16:30:22"
+  }
+]

@@ -1,0 +1,336 @@
+<script runat="server" language="javascript">
+  Platform.Load("Core", "1.1.1");
+
+  // =========================================================================
+  // GLOBAL STATE & SANITIZATION UTILITIES
+  // =========================================================================
+  var responseState = {
+    isPost: false,
+    success: false,
+    message: "",
+    debug: ""
+  };
+
+  var subData = {
+    subscriberKey: "",
+    email: "",
+    optInEmail: true,
+    optInSMS: false,
+    optInPush: false,
+    frequency: "Weekly"
+  };
+
+  // Defend against Reflected and Stored XSS
+  function sanitize(str) {
+    if (!str) return "";
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#x27;")
+      .replace(/\//g, "&#x2F;");
+  }
+
+  // =========================================================================
+  // CORE CONTROLLER LOGIC (RUNS IN SSJS TRY/CATCH)
+  // =========================================================================
+  try {
+    var deName = "Subscriber_Preference_Master";
+    var method = Platform.Request.Method();
+
+    // 1. Resolve Identity from Request (URL parameters or POST body)
+    var rawSubKey = Platform.Request.GetQueryStringParameter("sk");
+    var rawEmail = Platform.Request.GetQueryStringParameter("em");
+
+    if (method === "POST") {
+      responseState.isPost = true;
+      rawSubKey = Platform.Request.GetFormField("subscriberKey");
+      rawEmail = Platform.Request.GetFormField("email");
+    }
+
+    // Sanitize values
+    subData.subscriberKey = sanitize(rawSubKey);
+    subData.email = sanitize(rawEmail);
+
+    // Guard Clause: Ensure identity is present
+    if (!subData.subscriberKey) {
+      throw new Error("Missing or invalid subscriber authentication token.");
+    }
+
+    // 2. Handle Form Postback (Update Preferences)
+    if (method === "POST") {
+      var isSubmitted = Platform.Request.GetFormField("submitted");
+
+      if (isSubmitted === "true") {
+        // Collect channel values safely
+        var formEmailOpt = Platform.Request.GetFormField("optInEmail") === "true";
+        var formSMSOpt = Platform.Request.GetFormField("optInSMS") === "true";
+        var formPushOpt = Platform.Request.GetFormField("optInPush") === "true";
+        var rawFreq = Platform.Request.GetFormField("frequency");
+
+        // Whitelist validation for dropdown/radio values
+        var allowedFrequencies = ["Daily", "Weekly", "Monthly"];
+        var formFreq = "Weekly";
+        for (var i = 0; i < allowedFrequencies.length; i++) {
+          if (allowedFrequencies[i] === rawFreq) {
+            formFreq = rawFreq;
+            break;
+          }
+        }
+
+        // Upsert record: Matches on Primary Key (SubscriberKey) preventing duplicates
+        var targetDE = DataExtension.Init(deName);
+        var updateResult = targetDE.Rows.Upsert(
+          ["SubscriberKey"],
+          [subData.subscriberKey],
+          [
+            "EmailAddress",
+            "OptIn_Email",
+            "OptIn_SMS",
+            "OptIn_Push",
+            "Frequency",
+            "LastModifiedDate"
+          ],
+          [
+            subData.email,
+            formEmailOpt,
+            formSMSOpt,
+            formPushOpt,
+            formFreq,
+            Platform.Function.Now()
+          ]
+        );
+
+        // Synchronize in-memory model to match saved state
+        subData.optInEmail = formEmailOpt;
+        subData.optInSMS = formSMSOpt;
+        subData.optInPush = formPushOpt;
+        subData.frequency = formFreq;
+
+        responseState.success = true;
+        responseState.message = "Your communication preferences have been successfully updated.";
+      }
+    } else {
+      // 3. Handle Initial GET: Fetch Existing Profile from Data Extension
+      var preferenceDE = DataExtension.Init(deName);
+      var filter = {
+        Property: "SubscriberKey",
+        SimpleOperator: "equals",
+        Value: subData.subscriberKey
+      };
+      var records = preferenceDE.Rows.Retrieve(filter);
+
+      if (records && records.length > 0) {
+        var current = records[0];
+        subData.email = sanitize(current.EmailAddress) || subData.email;
+        subData.optInEmail = (String(current.OptIn_Email).toLowerCase() === "true");
+        subData.optInSMS = (String(current.OptIn_SMS).toLowerCase() === "true");
+        subData.optInPush = (String(current.OptIn_Push).toLowerCase() === "true");
+        subData.frequency = sanitize(current.Frequency) || "Weekly";
+      }
+    }
+
+  } catch (err) {
+    responseState.success = false;
+    responseState.message = "We were unable to process your request. Please try again later or contact support.";
+    responseState.debug = err.message || String(err);
+  }
+</script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Communication Preferences | Customer Portal</title>
+  <style>
+    :root {
+      --bg: #0b0e14;
+      --card-bg: #121824;
+      --border: #1f293d;
+      --primary: #0284c7;
+      --primary-hover: #0369a1;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --success: #10b981;
+      --error: #ef4444;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    .container {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      max-width: 520px;
+      width: 100%;
+      padding: 36px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+    }
+
+    h1 { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+    .subhead { color: var(--text-muted); font-size: 14px; margin-bottom: 24px; }
+    
+    .alert {
+      padding: 12px 16px;
+      border-radius: 6px;
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+    .alert.success { background: rgba(16, 185, 129, 0.12); border: 1px solid var(--success); color: var(--success); }
+    .alert.error { background: rgba(239, 68, 68, 0.12); border: 1px solid var(--error); color: var(--error); }
+
+    .form-group { margin-bottom: 20px; }
+    label.field-label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text-muted); }
+    
+    input[type="text"], select {
+      width: 100%;
+      padding: 10px 14px;
+      background: #0f141f;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: #fff;
+      font-size: 14px;
+    }
+    input[readonly] { opacity: 0.7; cursor: not-allowed; }
+
+    .toggle-section {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 24px;
+      background: #0e131d;
+    }
+    .toggle-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .toggle-item:last-child { border-bottom: none; }
+    .toggle-text { font-size: 14px; font-weight: 500; }
+    .toggle-desc { font-size: 12px; color: var(--text-muted); }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+    }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #334155;
+      transition: .2s;
+      border-radius: 24px;
+    }
+    .slider:before {
+      position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px;
+      background-color: white;
+      transition: .2s;
+      border-radius: 50%;
+    }
+    input:checked + .slider { background-color: var(--primary); }
+    input:checked + .slider:before { transform: translateX(20px); }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      background: var(--primary);
+      border: none;
+      border-radius: 6px;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    button:hover { background: var(--primary-hover); }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Manage Your Preferences</h1>
+    <p class="subhead">Select the channels and frequency you prefer to hear from us.</p>
+
+    <!-- Response Alerts -->
+    <script runat="server" language="javascript">
+      if (responseState.message) {
+        var alertClass = responseState.success ? "alert success" : "alert error";
+        Write('<div class="' + alertClass + '">' + responseState.message + '</div>');
+      }
+    </script>
+
+    <!-- Postback Form -->
+    <form action="" method="POST">
+      <input type="hidden" name="submitted" value="true">
+      <input type="hidden" name="subscriberKey" value="<ctrl:var name='subData.subscriberKey' />">
+
+      <div class="form-group">
+        <label class="field-label">Email Address</label>
+        <input type="text" name="email" value="<ctrl:var name='subData.email' />" readonly>
+      </div>
+
+      <div class="toggle-section">
+        <div class="toggle-item">
+          <div>
+            <div class="toggle-text">Email Updates</div>
+            <div class="toggle-desc">Product alerts, account updates, and digests</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" name="optInEmail" value="true" <ctrl:eval>if(subData.optInEmail){Write("checked");}</ctrl:eval>>
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="toggle-item">
+          <div>
+            <div class="toggle-text">SMS Text Alerts</div>
+            <div class="toggle-desc">Urgent shipment and order notifications</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" name="optInSMS" value="true" <ctrl:eval>if(subData.optInSMS){Write("checked");}</ctrl:eval>>
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="toggle-item">
+          <div>
+            <div class="toggle-text">Mobile App Push</div>
+            <div class="toggle-desc">Instant updates sent directly to your device</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" name="optInPush" value="true" <ctrl:eval>if(subData.optInPush){Write("checked");}</ctrl:eval>>
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="field-label">Preferred Digest Frequency</label>
+        <select name="frequency">
+          <option value="Daily" <ctrl:eval>if(subData.frequency=="Daily"){Write("selected");}</ctrl:eval>>Daily</option>
+          <option value="Weekly" <ctrl:eval>if(subData.frequency=="Weekly"){Write("selected");}</ctrl:eval>>Weekly</option>
+          <option value="Monthly" <ctrl:eval>if(subData.frequency=="Monthly"){Write("selected");}</ctrl:eval>>Monthly</option>
+        </select>
+      </div>
+
+      <button type="submit">Save Preferences</button>
+    </form>
+  </div>
+
+</body>
+</html>
