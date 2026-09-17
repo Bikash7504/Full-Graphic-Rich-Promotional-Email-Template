@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Credit Score Update</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f4f5f7;
+            font-family: Arial, sans-serif;
+            color: #333333;
+        }
+        .email-wrapper {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        .email-header {
+            background: linear-gradient(135deg, #0052cc 0%, #003399 100%);
+            padding: 24px;
+            text-align: center;
+            color: #ffffff;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            background-color: #002266;
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 4px;
+        }
+        .email-body {
+            padding: 32px 24px;
+        }
+        .greeting {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+        .message {
+            font-size: 15px;
+            color: #555555;
+            line-height: 1.5;
+            margin-bottom: 24px;
+        }
+        .score-banner {
+            background-color: #f0f4ff;
+            border: 1px solid #d0e1fd;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .btn-primary {
+            display: inline-block;
+            background-color: #0066ff;
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: bold;
+            padding: 14px 28px;
+            border-radius: 6px;
+            font-size: 16px;
+            box-shadow: 0 4px 12px rgba(0, 102, 255, 0.2);
+        }
+        .features-title {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #222222;
+        }
+        .feature-card {
+            display: flex;
+            align-items: flex-start;
+            background-color: #fafbfd;
+            border: 1px solid #eef2f7;
+            padding: 16px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+        }
+        .feature-icon {
+            font-size: 24px;
+            margin-right: 16px;
+            min-width: 32px;
+            text-align: center;
+        }
+        .feature-content h4 {
+            margin: 0 0 4px 0;
+            font-size: 15px;
+            color: #222222;
+        }
+        .feature-content p {
+            margin: 0;
+            font-size: 13px;
+            color: #666666;
+            line-height: 1.4;
+        }
+        .email-footer {
+            background-color: #f8fafc;
+            padding: 24px;
+            text-align: center;
+            font-size: 12px;
+            color: #777777;
+            border-top: 1px solid #eeeeee;
+        }
+        .email-footer a {
+            color: #0066ff;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="email-wrapper">
+        <!-- Header -->
+        <div class="email-header">
+            <div class="logo">PAISABAZAAR</div>
+        </div>
+
+        <!-- Body Content -->
+        <div class="email-body">
+            <div class="greeting">Hi BIKASH,</div>
+            <div class="message">
+                Your updated Credit Report is here, check now to see what has changed in your credit score report.
+            </div>
+
+            <!-- Call to Action Banner -->
+            <div class="score-banner">
+                <p style="margin: 0 0 16px 0; font-size: 16px; font-weight: bold; color: #1a1a1a;">Here is a change in your Credit Report!</p>
+                <a href="https://www.paisabazaar.com" class="btn-primary">Check Your Free Credit Score ›</a>
+            </div>
+
+            <!-- Features Section -->
+            <div class="features-title">Why choose Paisabazaar?</div>
+
+            <div class="feature-card">
+                <div class="feature-icon">📋</div>
+                <div class="feature-content">
+                    <h4>Credit Report from All 4 Bureaus</h4>
+                    <p>Get Credit Score and Report from CIBIL, Experian, Highmark and Equifax.</p>
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">📈</div>
+                <div class="feature-content">
+                    <h4>Free Monthly Credit Score Updates</h4>
+                    <p>Track your Credit Score monthly and get personalized insights on your credit report.</p>
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">💡</div>
+                <div class="feature-content">
+                    <h4>Detailed Insights on your Credit Report</h4>
+                    <p>Get actionable insights and fix errors in your report, if any.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="email-footer">
+            <p>If you have any questions or need assistance, reach out at <strong>1800-208-8877</strong> or <a href="mailto:care@paisabazaar.com">care@paisabazaar.com</a></p>
+            <p><a href="https://www.paisabazaar.com">Click here to unsubscribe</a></p>
+        </div>
+    </div>
+
+</body>
+</html>
